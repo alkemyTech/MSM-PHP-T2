@@ -45,12 +45,9 @@ class AuthController extends Controller
         $faker = \Faker\Factory::create();
 
         do { // genera un cbu aleatorio
-            $cbu = '';
-            for ($i = 0; $i < 22; $i++) {
-                $cbu .= $faker->randomNumber(1, true); // va agregando un número aleatorio al cbu
-            }
-            $cbuUsed = Account::where('cbu', $cbu)->first(); // busca si el cbu existe en la base de datos
-        } while ($cbuUsed); // si encuentra el cbu va a reiniciar el ciclo
+            $cbu = $faker->numerify(str_repeat('#', 22)); // genera un cbu aleatorio
+            $cbuUsed = Account::where('cbu', $cbu)->first(); // busca si el cbu generado existe en la base de datos
+        } while ($cbuUsed); // si existe el cbu en la base de datos va a reiniciar el ciclo y crear uno nuevo
 
         $user->save(); // el usuario se crea acá para evitar que se genere un usuario sin cbu si ocurren problemas
 

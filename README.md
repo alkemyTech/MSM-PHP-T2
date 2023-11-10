@@ -35,6 +35,8 @@
 
 - Ejecuta las migraciones para crear las tablas de bases de datos necesarias con ``` php artisan migrate ```
 
+- Generá las claves de encriptación para crear tokens de acceso seguros ``` php artisan passport:install ```
+
 - Levanta el servidor corriendo en la terminal  ``` php artisan serve ```
 
 # Paso 6: Instalación de Postman
@@ -60,3 +62,15 @@ Una vez que hayas configurado la solicitud según tus necesidades, simplemente h
 # Paso 11: Inspeccionar la Respuesta
 
 Postman mostrará la respuesta de la API en la parte inferior de la pantalla. Puedes ver el código de estado, los encabezados y el cuerpo de la respuesta.
+
+# Paso 11: Testear Endpoints
+
+Para testear endpoints con PHP UNIT se necesita:
+
+- Copia el archivo .env.testing.example y crea uno llamado .env.testing a través del comando ``` cp .env.testing.example .env.testing ```
+
+- Ejecuta las migraciones para crear las tablas de la base de datos para testing  con ``` php artisan migrate --env=testing```
+
+- Generá las claves de encriptación para crear tokens de acceso seguros pero en la base de datos de testing ``` php artisan passport:install --env=testing```
+
+- Corré los tests con el entorno de testing para no alterar la base de datos con este comando ``` php artisan test --env=testing ```

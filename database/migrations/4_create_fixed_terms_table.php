@@ -17,9 +17,9 @@ return new class extends Migration
             $table->foreignId('account_id')->references('id')->on('accounts'); // ID de la cuenta, referenciado a la columna id de la tabla account.
             $table->double('interest'); // Valor de los intereses a devenegar por el monto invertido.
             $table->double('total'); // Valor total de la inversión, intereses + monto inicial.
-            $table->int('duration'); // Duración en dias del plazo fijo.
+            $table->integer('duration'); // Duración en dias del plazo fijo.
             $table->timestamps(); // Columnas "created_at" y "updated_at"
-            $table->timestamps('closed_at'); // Fecha de finalización del plazo fijo.
+            $table->timestamp('closed_at')->nullable();     // Fecha de finalización del plazo fijo.
         });
     }
 

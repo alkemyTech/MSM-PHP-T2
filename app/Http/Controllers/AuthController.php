@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -22,12 +23,19 @@ class AuthController extends Controller
                 'password' => 'required|string|min:6',
             ]);
 
+            $role = Role::where('name', 'USER')->first();
+            if (!$role) {
+                $role = new Role();
+                $role->name = 'USER';
+                $role->save();
+            }
+
             $user = new User();
             $user->name = $req->name;
             $user->last_name = $req->last_name;
             $user->email = $req->email;
             $user->password = $req['password'] = Hash::make($req['password']);
-            $user->role_id = 2;
+            $user->role_id = $role->id;
 
             // Crear cuentas ARS y USD
             $this->createAccount($user, 'ARS', 300000);

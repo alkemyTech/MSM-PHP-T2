@@ -16,7 +16,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = User::find(Auth::user()->id);
             $token = $user->createToken('token')->accessToken;
-            return response()->ok(['Authentication Token' => $token, 'Logged-in user' => $user]);
+        return response()->ok(['Authentication Token' => $token, 'Logged-in user' => $user]);
         }
         return response()->unauthorized();
     }

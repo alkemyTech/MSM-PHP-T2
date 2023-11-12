@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -17,20 +18,14 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name','last_name','email','password','role_id'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
-    protected $hidden = [
-        'password',
-    ];
+    protected $hidden = ['password','deleted','created_at','updated_at', 'role_id'];
 
     /**
      * The attributes that should be cast.
@@ -40,4 +35,14 @@ class User extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
     ];
+
+    protected $with = ['role'];
+
+    public function getAuthPassword() {
+        return $this->password;
+    }
+
+    public function role(): BelongsTo {
+         return $this->belongsTo(Role::class);
+    }
 }

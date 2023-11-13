@@ -8,12 +8,27 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 
 {
+    public function login(Request $req)
+    {
+        $credentials = $req->validate([
+            'email' => 'required|exists:users,email',
+            'password' => 'required'
+        ]);
+        if (Auth::attempt($credentials)) {
+            $user = User::find(Auth::user()->id);
+            $token = $user->createToken('token')->accessToken;
+            return response()->ok(['token' => $token, 'user' => $user]);
+        }
+        return response()->unauthorized(['message' => 'Credenciales incorrectas.']);
+    }
+    
     public function register(Request $req)
     {
         try {

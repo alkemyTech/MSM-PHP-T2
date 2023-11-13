@@ -18,6 +18,7 @@ class RegisterTest extends TestCase
             'password' => 'passwordtest'
         ];
 
+        $this->createPersonalClient(); // Create a personal client to generate the token, needed after refreshDatabase
         $response = $this->postJson('/api/auth/register', $data);
 
         $response

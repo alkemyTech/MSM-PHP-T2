@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 
@@ -80,6 +81,20 @@ class AuthController extends Controller
         $account->user_id = $user->id;
         $account->cbu = $cbu;
         $account->save();
+    }
+  
+    public function login(Request $req)
+    {
+        $credentials = $req->validate([
+            'email' => 'required|exists:users,email',
+            'password' => 'required'
+        ]);
+        if (Auth::attempt($credentials)) {
+            $user = User::find(Auth::user()->id);
+            $token = $user->createToken('token')->accessToken;
+            return response()->created(['token' => $token, 'user' => $user]);
+        }
+        return response()->unauthorized(['message' => 'Credenciales inválidas']);
     }
 }
 

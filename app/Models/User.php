@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -18,14 +19,14 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = ['name','last_name','email','password','role_id'];
+    protected $fillable = ['name', 'last_name', 'email', 'password', 'role_id', 'deleted'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
      */
-    protected $hidden = ['password','deleted','created_at','updated_at', 'role_id'];
+    protected $hidden = ['password', 'deleted', 'created_at', 'updated_at', 'role_id'];
 
     /**
      * The attributes that should be cast.
@@ -36,13 +37,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected $with = ['role'];
+    protected $with = ['accounts'];
 
-    public function getAuthPassword() {
-        return $this->password;
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
     }
-
-    public function role(): BelongsTo {
-         return $this->belongsTo(Role::class);
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
     }
 }

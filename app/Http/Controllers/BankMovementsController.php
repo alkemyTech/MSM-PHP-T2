@@ -24,7 +24,7 @@ class BankMovementsController extends Controller
         $enoughMoney = $account->balance >= $req->amount;
 
         if (!$enoughMoney) {
-            return response()->json(['error' => 'You do not have enough money in your account to create a fixed term']);
+            return response()->json(['error' => 'You do not have enough money in your account to create a fixed term'], 422);
         }
 
         $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno

@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\FixedTerm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class BankMovementsController extends Controller
 {
@@ -14,17 +15,18 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-        $account = Account::where('user_id', $user->id)->where('currency', 'ARS')->first(); // busco la cuenta en pesos que pertenece al usuario
-
-        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000 y que la duración de este sea mayor o igual a 30 dias
+        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario
+            'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id),
             'amount' => "numeric|gte:1000",
             'duration' => 'numeric|gte:30',
         ]);
 
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
+
         $enoughMoney = $account->balance >= $req->amount;
 
         if (!$enoughMoney) {
-            return response()->json(['error' => 'You do not have enough money in your account to create a fixed term']);
+            return response()->json(['error' => 'You do not have enough money in your account to create a fixed term'], 422);
         }
 
         $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno

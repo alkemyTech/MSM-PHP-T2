@@ -17,7 +17,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::middleware('auth:api')->group(function () {
+
+    Route::prefix('accounts')->group(function () {
+        Route::get('balance', [BankMovementsController::class, 'index']);
+    });
 
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
 

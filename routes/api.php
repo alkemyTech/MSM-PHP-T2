@@ -25,6 +25,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
 
     Route::prefix('auth')->group(function () {
+        Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
         Route::post('register', [AuthController::class, 'register'])->withoutMiddleware('auth:api');
     });
 

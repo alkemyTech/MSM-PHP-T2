@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\BalanceDTO;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\FixedTerm;
@@ -11,6 +12,11 @@ use Illuminate\Validation\Rule;
 
 class BankMovementsController extends Controller
 {
+    public function index()
+    {
+        return response()->ok(['Account Balance' => (new BalanceDTO())->toArray()]);
+    }
+
     public function create(Request $req)
     {
         $user = Auth::user(); // busco el usuario autenticado

@@ -37,7 +37,6 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    protected $with = ['accounts'];
 
     public function role(): BelongsTo
     {

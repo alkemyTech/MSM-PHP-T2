@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BankMovementsController;
 use App\Http\Controllers\UserController;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->group(function () {
 
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
+    Route::post('accounts', [AccountController::class, 'create']);
 
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');

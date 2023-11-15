@@ -18,14 +18,15 @@ class RegisterTest extends TestCase
             'password' => 'passwordtest'
         ];
 
+        $this->createPersonalClient(); // Create a personal client to generate the token, needed after refreshDatabase
         $response = $this->postJson('/api/auth/register', $data);
 
         $response
             ->assertStatus(201)
-            ->assertJsonPath('mensaje', 'Solicitud procesada con éxito.')
-            ->assertJsonPath('datos.user.name', $data['name'])
-            ->assertJsonPath('datos.user.last_name', $data['last_name'])
-            ->assertJsonPath('datos.user.email', $data['email']);
+            ->assertJsonPath('message', 'Request successfully processed')
+            ->assertJsonPath('data.user.name', $data['name'])
+            ->assertJsonPath('data.user.last_name', $data['last_name'])
+            ->assertJsonPath('data.user.email', $data['email']);
 
         $this->assertDatabaseHas('users', ['email' => $data['email']]);
     }
@@ -43,11 +44,11 @@ class RegisterTest extends TestCase
 
         $response
             ->assertStatus(201)
-            ->assertJsonPath('mensaje', 'Solicitud procesada con éxito.');
+            ->assertJsonPath('message', 'Request successfully processed');
 
-        $this->assertDatabaseHas('accounts', ['user_id' => $response->json('datos.user.id')]);
+        $this->assertDatabaseHas('accounts', ['user_id' => $response->json('data.user.id')]);
 
-        $userAccounts = Account::where('user_id', $response->json('datos.user.id'))->get();
+        $userAccounts = Account::where('user_id', $response->json('data.user.id'))->get();
         $this->assertCount(2, $userAccounts);
 
         $arsAccount = $userAccounts->where('currency', 'ARS')->first();
@@ -74,7 +75,7 @@ class RegisterTest extends TestCase
 
         $response
             ->assertStatus(201)
-            ->assertJsonPath('mensaje', 'Solicitud procesada con éxito.');
+            ->assertJsonPath('message', 'Request successfully processed');
 
         $role_id = Role::where('name', 'USER')->value('id');
         $this->assertDatabaseHas('users', ['role_id' => $role_id]);

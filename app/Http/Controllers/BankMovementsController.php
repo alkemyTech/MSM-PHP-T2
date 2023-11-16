@@ -102,6 +102,6 @@ class BankMovementsController extends Controller
         $transaction->account_id = $receiver->id;
         $transaction->type = 'INCOME';
         $transaction->save();
-        return response()->created([], 'Transaction successfully processed');
+        return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'to' => $receiver->user], 'Transaction successfully processed');
     }
 }

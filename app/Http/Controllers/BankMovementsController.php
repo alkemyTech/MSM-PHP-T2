@@ -55,4 +55,31 @@ class BankMovementsController extends Controller
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
+    public function deposit(Request $request){
+        //Recuperar los datos de la solicitud
+        $account=$request->input('account');
+        $user_id=$request->input('user_id');
+        $AmountDeposit=$request->input('amount deposit');
+        //Validar si el tipo de cuenta existe para el usuario logueado
+        $account=Account::where('user_id',$user_id)->where('account',$account)->first();
+        if ($account){
+            //crear un registro en la tabla de movimientos
+            $transaction=new Transaction();
+            $transaction->user_id=$user_id;
+            $transaction->account_id=$account->id;
+            $transaction->amount=$AmountDeposit;
+            $transaction->type='deposit';
+            $transaction->save();
+            //actualizar el saldo de la cuenta
+            $account->balance=$account->balance+$AmountDeposit;
+            $account->save();
+            //devolver el registro generado y la cuenta con el balance actualizado
+            return response()->json(['transaction'=>$transaction,'account'=>$account],200);
+        }else{
+            return response()->json(['message'=>'Account not found'],404);
+            
+
+
+        }
+}
 }

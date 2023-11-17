@@ -74,3 +74,17 @@ Para testear endpoints con PHP UNIT se necesita:
 - Generá las claves de encriptación para crear tokens de acceso seguros pero en la base de datos de testing ``` php artisan passport:install --env=testing```
 
 - Corré los tests con el entorno de testing para no alterar la base de datos con este comando ``` php artisan test --env=testing ```
+
+# ¿Çomo poblar las tablas con datos preeliminares?
+
+- En el proyecto se incorporaron Seeders y Factories que permiten junto con la libreria Faker, poblar las tablas con datos de prueba.
+
+No es necesario instalar, dado que las carpetas están incluidas en el proyecto.
+
+Para ejecutar, es necesario utilizar el comando php artisan db:seed. Se puede utilizar cuantas veces se requiera.
+
+En el archivo  database/seeders/DatebaseSeeder.php se encuentra la funcion run(), que se ejecuta con el comando php artisan db:seed. Esta función genera los datos de las tablas. Podemos seleccionar cuantos registros se desean agregar modificando el parametro en el metodo count().
+
+Por otro lado, tambien se puede definir la locación de los datos que se van a generar. Dentro del archivo database/factories/UserFactory.php podemos decidir esta locación editando el parametro dentro del metodo fake(), correspondiente a los atributos 'name' y 'last_name', para crear nombres y apellidos de diferentes regiones del mundo. 
+
+Para conocer los id (UCI) puede visitar la siguiente web: https://www.localeplanet.com/icu/.

@@ -57,7 +57,7 @@ class BankMovementsController extends Controller
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
 
-    public function payment(Request $req)
+  public function payment(Request $req)
     {
         $user = Auth::user(); // busco el usuario autenticado
 
@@ -88,5 +88,52 @@ class BankMovementsController extends Controller
 
         $transaction->load('account');
         return response()->created(['message' => 'Payment successfully made', 'transaction' => $transaction]);
+  }
+    public function send(Request $request) {
+        $request->validate([
+            'sender_account_id' => 'required|exists:accounts,id',
+            'receiver_account_id' => 'required|exists:accounts,id',
+            'amount' => 'required|numeric|gt:0'
+        ]);
+
+        // Busco al sender y al receiver
+        $user = Auth::user();
+        $sender = Account::where('id', $request->sender_account_id)->first();
+        $receiver = Account::where('id', $request->receiver_account_id)->first();
+
+        // Validaciones
+        if($sender->deleted || $receiver->deleted)
+            return response()->badRequest([],'You cannot send money to a deleted account');
+        else if($sender->user->deleted || $receiver->user->deleted)
+            return response()->badRequest([],'You cannot send money to a deleted user');
+        else if($sender->user_id != $user->id)
+            return response()->forbidden([],'You do not have permission to perform this action');
+        else if($sender->currency != $receiver->currency)
+            return response()->badRequest([],'You cannot send money to an account with a different currency');
+        else if($sender->balance < $request->amount)
+            return response()->badRequest([],'You do not have enough money in your account');
+        else if($sender->transaction_limit < $request->amount)
+            return response()->badRequest([],'You have exceeded your transaction limit');
+
+        // Actualizo los balances de las cuentas
+        $sender->balance -= $request->amount;
+        $receiver->balance += $request->amount;
+        $sender->save();
+        $receiver->save();
+
+        // Creo la transacción de tipo PAYMENT para el usuario que envía el dinero
+        $transaction = new Transaction();
+        $transaction->amount = $request->amount;
+        $transaction->account_id = $sender->id;
+        $transaction->type = 'PAYMENT';
+        $transaction->save();
+
+        // Creo la transacción de tipo INCOME para el usuario que recibe el dinero
+        $transaction = new Transaction();
+        $transaction->amount = $request->amount;
+        $transaction->account_id = $receiver->id;
+        $transaction->type = 'INCOME';
+        $transaction->save();
+        return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'to' => $receiver->user], 'Transaction successfully processed');
     }
 }

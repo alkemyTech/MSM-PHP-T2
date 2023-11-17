@@ -23,6 +23,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('accounts')->group(function () {
         Route::get('balance', [BankMovementsController::class, 'index']);
+        Route::post('deposit', [BankMovementsController::class, 'deposit']);
         
     });
 

@@ -64,7 +64,7 @@ class BankMovementsController extends Controller
         $account = Account::where('id', $req->account_id)->first(); // busco la cuenta que pertenece al usuario
 
         $req->validate([ // valido que haga un pago de mínimo 1 peso/dólar, que el id de la cuenta pertenezca al usuario y que no supere el límite de dinero en una transacción
-            'account_id' => ['required', Rule::exists('accounts', 'id')->where('user_id', $user->id)],
+            'account_id' => ['required', Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('deleted', false)],
             'amount' => "required|numeric|gte:1|lte:{$account->transaction_limit}",
             'description' => 'string'
         ]);

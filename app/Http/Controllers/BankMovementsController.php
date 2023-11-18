@@ -61,7 +61,8 @@ class BankMovementsController extends Controller
         $user_id=$request->input('user_id');
         $AmountDeposit=$request->input('amount deposit');
         //Validar si el tipo de cuenta existe para el usuario logueado
-        $account=Account::where('user_id',$user_id)->where('account',$account)->first();
+        $request->validate([]);
+        $account=Account::where('user_id', Auth::user()->id)->where('id', $account)->first();
         if ($account){
             //crear un registro en la tabla de movimientos
             $transaction=new Transaction();
@@ -74,12 +75,9 @@ class BankMovementsController extends Controller
             $account->balance=$account->balance+$AmountDeposit;
             $account->save();
             //devolver el registro generado y la cuenta con el balance actualizado
-            return response()->json(['transaction'=>$transaction,'account'=>$account],200);
+           return response()->created(['transaction' => $transaction, 'account' => $account]);
         }else{
-            return response()->json(['message'=>'Account not found'],404);
-            
-
-
-        }
+            return response()->notFound(['message' => 'Account not found']);
+            }
 }
 }

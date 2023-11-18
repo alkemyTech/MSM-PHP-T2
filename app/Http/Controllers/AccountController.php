@@ -24,17 +24,12 @@ class AccountController extends Controller
         $account->save();
         return response()->created(['account' => $account],'Account successfully created');
     }
-    public function index(Request $request,$user_id){
-        //verificar si el usuario tiene el Role ADMIN
-        if(($request->user()->Role('ADMIN'))){
-            return response()->json(['message' =>"Unauthorized access"],403);
-        //obtener el listado de cuentas del usuario
-        $accounts = Account::where('user_id',$user_id)->get();
-        return response()->json(['accounts' => $accounts],200); 
-
+    public function index($user_id)
+    {
+        $accounts = Account::where('user_id', $user_id)->get();
+        return response()->ok(['accounts' => $accounts]);
+    }
         }
 
-        
-        }
     }
 

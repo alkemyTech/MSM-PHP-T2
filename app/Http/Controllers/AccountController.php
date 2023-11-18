@@ -26,7 +26,7 @@ class AccountController extends Controller
     }
     public function index(Request $request,$user_id){
         //verificar si el usuario tiene el Role ADMIN
-        if(($request->user()->hasRole('ADMIN'))){
+        if(($request->user()->Role('ADMIN'))){
             return response()->json(['message' =>"Unauthorized access"],403);
         //obtener el listado de cuentas del usuario
         $accounts = Account::where('user_id',$user_id)->get();

@@ -29,10 +29,13 @@ class Account extends Model
 
     public function generateCbu()
     {
-        $cbu = '';
-        for ($i = 0; $i < 22; $i++) {
-            $cbu .= rand(0, 9);
-        }
+        $faker = \Faker\Factory::create();
+
+        do {
+            $cbu = $faker->numerify(str_repeat('#', 22)); // genera un cbu aleatorio
+            $cbuUsed = Account::where('cbu', $cbu)->first(); // busca si el cbu generado existe en la base de datos
+        } while ($cbuUsed); // si existe el cbu en la base de datos va a reiniciar el ciclo y crear uno nuevo
+
         return $cbu;
     }
 }

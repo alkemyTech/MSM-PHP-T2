@@ -19,7 +19,7 @@ class BalanceDTO
     public function __construct()
     {
         $this->user = User::where('id', Auth::user()->id)->without('accounts')->first(); // te trate el usuario donde el id sea igual al usuario logueado. No uso directamente Auth::user() porque no se puede implementar el método without() para devolver las cuentas más abajo
-        $this->accounts = Account::where('user_id', $this->user->id)->get(); // traigo todas las cuentas relacionadas al usuario
+        $this->accounts = Account::where('user_id', $this->user->id)->without('user')->get(); // traigo todas las cuentas relacionadas al usuario
         $this->balance = ['ARS accounts balance' => 0, 'USD accounts balance' => 0]; // creo la variable del balance donde se inicializa en 0 cada balance de la cuenta
         $this->history = Transaction::whereIn('account_id', $this->accounts->pluck('id'))->get(); // busco todas las transacciones de todas las cuentas del usuario donde los id de la cuenta sean los que agarra el método pluck()
         $this->fixed_term_deposits = FixedTerm::whereIn('account_id', $this->accounts->pluck('id'))->get(); // busco todos los plazos fijos de todas las cuentas del usuario donde los id de la cuenta sean los que agarra el método pluck()

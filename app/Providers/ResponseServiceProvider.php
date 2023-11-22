@@ -38,6 +38,10 @@ class ResponseServiceProvider extends ServiceProvider
             return Response::json($response, 201);
         });
 
+        Response::macro('unprocessableContent', function ($errors = [], $message = 'Unable to process content') use ($instance) {
+            return $instance->handleErrorResponse($message, $errors, 422);
+        });
+
         Response::macro('noContent', function () {
             return Response::json([], 204);
         });

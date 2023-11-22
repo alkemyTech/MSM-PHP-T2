@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\FixedTerm;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -22,10 +23,10 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario
-            'account_id' => ['required', Rule::exists('accounts', 'id')->where('user_id', $user->id)],
-            'amount' => "required|numeric|gte:1000",
-            'duration' => 'required|numeric|gte:30',
+        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
+            'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
+            'amount' => "numeric|gte:1000",
+            'duration' => 'numeric|gte:30',
         ]);
 
         $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
@@ -33,7 +34,7 @@ class BankMovementsController extends Controller
         $enoughMoney = $account->balance >= $req->amount;
 
         if (!$enoughMoney) {
-            return response()->json(['error' => 'You do not have enough money in your account to create a fixed term'], 422);
+            return response()->unprocessableContent([], 'You do not have enough money in your account');
         }
 
         $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno
@@ -46,6 +47,7 @@ class BankMovementsController extends Controller
         $fixedTerm->account_id = $account->id;
         $fixedTerm->interest = $fixedTermInterest;
         $fixedTerm->total = $fixedTermTotal;
+        $fixedTerm->closed_at = Carbon::parse($fixedTerm->created_at)->addDays(intval($req->duration));
 
         $account->balance -= $req->amount; // resto al balance el dinero metido en el plazo fijo
 
@@ -57,7 +59,7 @@ class BankMovementsController extends Controller
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
 
-  public function payment(Request $req)
+    public function payment(Request $req)
     {
         $user = Auth::user(); // busco el usuario autenticado
 
@@ -88,8 +90,10 @@ class BankMovementsController extends Controller
 
         $transaction->load('account');
         return response()->created(['message' => 'Payment successfully made', 'transaction' => $transaction]);
-  }
-    public function send(Request $request) {
+    }
+
+    public function send(Request $request)
+    {
         $request->validate([
             'sender_account_id' => 'required|exists:accounts,id',
             'receiver_account_id' => 'required|exists:accounts,id',
@@ -101,19 +105,16 @@ class BankMovementsController extends Controller
         $sender = Account::where('id', $request->sender_account_id)->first();
         $receiver = Account::where('id', $request->receiver_account_id)->first();
 
-        // Validaciones
-        if($sender->deleted || $receiver->deleted)
-            return response()->badRequest([],'You cannot send money to a deleted account');
-        else if($sender->user->deleted || $receiver->user->deleted)
-            return response()->badRequest([],'You cannot send money to a deleted user');
-        else if($sender->user_id != $user->id)
-            return response()->forbidden([],'You do not have permission to perform this action');
-        else if($sender->currency != $receiver->currency)
-            return response()->badRequest([],'You cannot send money to an account with a different currency');
-        else if($sender->balance < $request->amount)
-            return response()->badRequest([],'You do not have enough money in your account');
-        else if($sender->transaction_limit < $request->amount)
-            return response()->badRequest([],'You have exceeded your transaction limit');
+        $request->validate([
+            'sender_account_id' => ['required', Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('deleted', false)], // busco que exista, que pertenezca al usuario y que no haya sido borrada
+            'receiver_account_id' => ['required', Rule::exists('accounts', 'id')->whereNot('id', $sender->id)->where('currency', $sender->currency)->where('deleted', false)], // busco que exista, que sea una cuenta diferente a la del usuario, que sea el mismo tipo de moneda y que no haya sido borrada
+            'amount' => "required|numeric|gte:1|lte:{$sender->transaction_limit}",
+            'description' => 'string|max:255'
+        ]);
+
+        // Validación custom 
+        if ($sender->balance < $request->amount)
+            return response()->unprocessableContent([], 'You do not have enough money in your account');
 
         // Actualizo los balances de las cuentas
         $sender->balance -= $request->amount;
@@ -122,18 +123,21 @@ class BankMovementsController extends Controller
         $receiver->save();
 
         // Creo la transacción de tipo PAYMENT para el usuario que envía el dinero
-        $transaction = new Transaction();
-        $transaction->amount = $request->amount;
-        $transaction->account_id = $sender->id;
-        $transaction->type = 'PAYMENT';
-        $transaction->save();
+        $paymentTransaction = new Transaction();
+        $paymentTransaction->amount = $request->amount;
+        $paymentTransaction->account_id = $sender->id;
+        $paymentTransaction->type = 'PAYMENT';
+        $paymentTransaction->description = $request->description;
+        $paymentTransaction->save();
 
         // Creo la transacción de tipo INCOME para el usuario que recibe el dinero
-        $transaction = new Transaction();
-        $transaction->amount = $request->amount;
-        $transaction->account_id = $receiver->id;
-        $transaction->type = 'INCOME';
-        $transaction->save();
-        return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'to' => $receiver->user], 'Transaction successfully processed');
+        $incomeTransaction = new Transaction();
+        $incomeTransaction->amount = $request->amount;
+        $incomeTransaction->account_id = $receiver->id;
+        $incomeTransaction->type = 'INCOME';
+        $incomeTransaction->description = $request->description;
+        $incomeTransaction->save();
+
+        return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'payment_transaction' => $paymentTransaction, 'to' => $receiver->user, 'income_transaction' => $incomeTransaction], 'Transaction successfully processed');
     }
 }

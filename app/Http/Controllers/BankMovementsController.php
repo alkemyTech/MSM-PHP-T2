@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\BalanceDTO;
-use App\Http\TransactionDTO;
-
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\FixedTerm;

@@ -35,4 +35,28 @@ class AccountController extends Controller
         $account->save();
         return response()->created(['account' => $account], 'Account successfully created');
     }
+
+    public function updateAccountLimit(Request $request, $account_id) {
+
+        $request -> validate([
+            'transaction_limit' => 'required',
+        ]);
+
+        $account_id = Account::find($account_id);
+        if (!$account_id) {
+            return response()->notFound(['message' => "The Account doesn't exist"]);
+        }
+
+        $authUser_id = (Auth::user())->id;
+        $owner_user_id = $account_id->user->id;
+        
+        if ($authUser_id != $owner_user_id) {
+            return response()->forbidden(['message' => "The Account doesn't belong to you"]);
+        } else {
+            $account_id->update(['transaction_limit' => $request->transaction_limit]);
+            $account_id->makeHidden('user');
+            return response()->ok(['message' => 'Transaction Limit successfully updated',$account_id]);
+        }
+    }
 }
+

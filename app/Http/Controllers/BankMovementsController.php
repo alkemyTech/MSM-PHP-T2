@@ -23,7 +23,7 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario
+        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
             'amount' => "numeric|gte:1000",
             'duration' => 'numeric|gte:30',
@@ -59,9 +59,48 @@ class BankMovementsController extends Controller
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
 
+    public function payment(Request $req)
+    {
+        $user = Auth::user(); // busco el usuario autenticado
+
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta que pertenece al usuario
+
+        $req->validate([ // valido que haga un pago de mínimo 1 peso/dólar, que el id de la cuenta pertenezca al usuario y que no supere el límite de dinero en una transacción
+            'account_id' => ['required', Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('deleted', false)],
+            'amount' => "required|numeric|gte:1|lte:{$account->transaction_limit}",
+            'description' => 'string'
+        ]);
+
+        $enoughMoney = $account->balance >= $req->amount; // chequeo que tenga la cantidad suficiente para realizar el pago
+
+        if (!$enoughMoney) {
+            return response()->json(['error' => 'You do not have enough money in your account to make a transaction'], 422);
+        }
+
+        $transaction = new Transaction(); // creo la transacción
+        $transaction->amount = $req->amount;
+        $transaction->type = 'PAYMENT';
+        $transaction->description = $req->description;
+        $transaction->account_id = $req->account_id;
+
+        $account->balance -= $req->amount; // resto al balance el dinero enviado en el pago
+
+        $account->save(); // guardo la cuenta con el balance actualizado
+        $transaction->save(); // guardo la transacción creada
+
+        $transaction->load('account');
+        return response()->created(['message' => 'Payment successfully made', 'transaction' => $transaction]);
+    }
+
     public function send(Request $request)
     {
-        // Busco al usuario, al sender y al receiver
+        $request->validate([
+            'sender_account_id' => 'required|exists:accounts,id',
+            'receiver_account_id' => 'required|exists:accounts,id',
+            'amount' => 'required|numeric|gt:0'
+        ]);
+
+        // Busco al sender y al receiver
         $user = Auth::user();
         $sender = Account::where('id', $request->sender_account_id)->first();
         $receiver = Account::where('id', $request->receiver_account_id)->first();

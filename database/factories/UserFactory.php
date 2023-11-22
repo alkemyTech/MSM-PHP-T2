@@ -2,14 +2,19 @@
 
 namespace Database\Factories;
 
+use App\Models\Role;
+
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Ramsey\Uuid\Builder\FallbackBuilder;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
+
 class UserFactory extends Factory
+
 {
     protected static ?string $password;
 
@@ -20,12 +25,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $role_id = Role::all()->pluck('id')->toArray();
+        $name = fake('es_ES')->firstName($gender = 'male'|'female');
+        $last_name = fake('es_ES')->lastName();
+        $userName = strtolower($name . '.' . $last_name);
+        $email = fake()->freeEmailDomain();
+        
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'name' => $name,
+            'last_name' => $last_name,
+            'email' => $userName  . '@' . $email,
+            'password' => Hash::make(fake()->password()),
+            'role_id' => fake()->randomElement($role_id)
         ];
     }
 

@@ -2,7 +2,12 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\User;
+use App\Models\Account;
+use App\Models\Transaction;
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,11 +17,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        User::factory()->count(10)->create(); //En el parámetro del metodo 'count' se puede colocar el numero de la cantidad de registros que se quiere ingresar.
+        Account::factory()->count(10)->create(); //En el parámetro del metodo 'count' se puede colocar el numero de la cantidad de registros que se quiere ingresar.
+        Transaction::factory()->count(10)->create(); //En el parámetro del metodo 'count' se puede colocar el numero de la cantidad de registros que se quiere ingresar.
     }
 }

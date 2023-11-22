@@ -58,6 +58,19 @@ class BankMovementsController extends Controller
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
+  
+    public function updateTransaction(Request $request, $transaction_id) {
+
+        $request -> validate([
+            'description' => 'required',
+        ]);
+        
+        $transaction = Transaction::find($transaction_id);
+        $transaction->update(['description' => $request->description]);
+        $transaction->makeHidden('account');
+
+        return response()->created(['message' => 'Description successfully updated',$transaction]);
+    }
 
     public function payment(Request $req)
     {

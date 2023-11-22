@@ -39,4 +39,7 @@ Route::middleware('auth:api')->group(function () {
     Route::middleware('role:ADMIN')->get('users', [UserController::class, 'index']);
 
     Route::delete('/users/{id}', [UserController::class,'deleteUser']);
+
+    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class,'updateTransaction']);
+
 });

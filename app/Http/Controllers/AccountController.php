@@ -3,12 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
-    public function create(Request $request){
+    public function index()
+    {
+        $userId = Auth::user()->id;
+        $accounts = Account::where('user_id', $userId)->where('deleted', false)->get();
+
+        $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->get();
+        return response()->ok(['transactions' => $transactions]);
+    }
+
+    public function create(Request $request)
+    {
         $user = Auth::user();
         // Valida que la moneda sea ARS o USD
         $request->validate([
@@ -22,6 +33,6 @@ class AccountController extends Controller
         $account->transaction_limit = $request->currency == 'ARS' ? 300000 : 1000;
         $account->cbu = $account->generateCbu();
         $account->save();
-        return response()->created(['account' => $account],'Account successfully created');
+        return response()->created(['account' => $account], 'Account successfully created');
     }
 }

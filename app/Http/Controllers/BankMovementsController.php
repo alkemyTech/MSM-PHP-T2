@@ -66,10 +66,10 @@ class BankMovementsController extends Controller
         ]);
         
         $transaction = Transaction::find($transaction_id);
-        $oldDescription = $transaction->description;
         $transaction->update(['description' => $request->description]);
+        $transaction->makeHidden('account');
 
-        return response()->created(['message' => 'Description successfully updated','Old Description' => $oldDescription, 'New Description' => ($transaction->description)]);
+        return response()->created(['message' => 'Description successfully updated',$transaction]);
     }
 
   public function payment(Request $req)

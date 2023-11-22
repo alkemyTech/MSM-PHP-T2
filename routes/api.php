@@ -31,10 +31,12 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
         Route::post('register', [AuthController::class, 'register'])->withoutMiddleware('auth:api');
-        Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
     });
 
     Route::middleware('role:ADMIN')->get('users', [UserController::class, 'index']);
 
     Route::delete('/users/{id}', [UserController::class,'deleteUser']);
+
+    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class,'updateTransaction']);
+
 });

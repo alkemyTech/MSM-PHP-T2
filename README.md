@@ -74,3 +74,30 @@ Para testear endpoints con PHP UNIT se necesita:
 - Generá las claves de encriptación para crear tokens de acceso seguros pero en la base de datos de testing ``` php artisan passport:install --env=testing```
 
 - Corré los tests con el entorno de testing para no alterar la base de datos con este comando ``` php artisan test --env=testing ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ¿Cómo actualizar la descripción de una transaccion?
+
+Mediante la funcion "updateTransaction" podemos actualizar la descripcion de una transacción realizada con anterioridad. 
+Esta función espera el parametro "descrption" dentro del cuerpo de la solicitud HTTP.
+
+### Configuración de la solicitud
+
+- Primero, crear una solicitud del tipo 'patch' en Postman
+- Luego, colocar la URL: '/transactions/{transaction_id}'
+- Por ultimo, en la pestaña 'row', se debe completar un campo llamado 'description', que no puede ser nulo.
+
+> Nota: {transaction_id} debee reemplazarse por el numero id de la transacción que se desea actualizar.

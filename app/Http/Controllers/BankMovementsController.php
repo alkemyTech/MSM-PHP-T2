@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\BalanceDTO;
+use App\Http\TransactionDTO;
+
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\FixedTerm;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -54,5 +57,18 @@ class BankMovementsController extends Controller
         $fixedTerm->load('account'); // cargo la cuenta para que la devuelva en el json
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
+    }
+    
+    public function updateTransaction(Request $request, $transaction_id) {
+
+        $request -> validate([
+            'description' => 'required',
+        ]);
+        
+        $transaction = Transaction::find($transaction_id);
+        $oldDescription = $transaction->description;
+        $transaction->update(['description' => $request->description]);
+
+        return response()->created(['message' => 'Description successfully updated','Old Description' => $oldDescription, 'New Description' => ($transaction->description)]);
     }
 }

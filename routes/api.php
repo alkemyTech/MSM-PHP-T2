@@ -22,8 +22,10 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->group(function () {
 
     Route::prefix('accounts')->group(function () {
-        Route::get('balance', [BankMovementsController::class, 'index']);
+        Route::get('balance', [BankMovementsController::class, 'index']); 
+        Route::patch('{account_id}', [AccountController::class,'updateAccountLimit']);
     });
+
     Route::get('transactions', [AccountController::class, 'index']);
 
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
@@ -38,10 +40,12 @@ Route::middleware('auth:api')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
     });
 
-    Route::middleware('role:ADMIN')->get('users', [UserController::class, 'index']);
+    Route::middleware('role:ADMIN')->group(function () {
+        Route::get('users', [UserController::class, 'index']);
+        Route::get('transactions/{user_id}', [BankMovementsController::class, 'list']);
+    });
 
-    Route::delete('/users/{id}', [UserController::class,'deleteUser']);
+    Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
 
-    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class,'updateTransaction']);
-
+    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class, 'updateTransaction']);
 });

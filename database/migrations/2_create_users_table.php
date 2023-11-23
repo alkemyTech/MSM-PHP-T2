@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('email')->unique(); // E-mail del usuario
             $table->string('password'); // Contraseña del Usuario
             $table->foreignId('role_id')->references('id')->on('roles'); // ID del rol del usuario, referenciado a la columna id de la tabla role.
-            $table->rememberToken(); // Recuerda el token de usuario para consultas posteriores
             $table->timestamps(); // Establece las columnas "created_at" y "updated_at"
             $table->boolean('deleted')->default(false); // Indica si el usuario ha sido eliminado. Por default es falso.
         });

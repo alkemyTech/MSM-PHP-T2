@@ -83,4 +83,11 @@ class AuthController extends Controller
         }
         return response()->unauthorized(['message' => 'Invalid credentials']);
     }
+
+    public function userInfo(Request $request) {
+        $authUser_id = (Auth::user())->id;
+        $userInfo = User::find($authUser_id);
+        $userInfo->makeHidden('role_id','remember_token');
+        return response()->json([$userInfo]);
+    }
 }

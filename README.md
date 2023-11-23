@@ -118,3 +118,7 @@ Esta función espera el parametro "transaction_limit" dentro del cuerpo de la so
 
 > Nota: {account_id} debee reemplazarse por el numero id de la cuenta que se desea actualizar.
 
+## ¿Como obtiene el usuario su información?
+
+Para que el usuario pueda visualizar su informacion, en primer lugar debe estar loggueado.
+Luego, mediante un metodo Get con la URL '/auth/me', la funcion userInfo devolverá la información de usuario.

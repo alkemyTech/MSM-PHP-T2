@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        return response()->ok(['users' => User::all()]);
+        return response()->ok(['users' => User::where('deleted', false)->get()]);
     }
 
     public function deleteUser(Request $req, $id) {

@@ -52,13 +52,6 @@ class AuthController extends Controller
 
     protected function createAccount($user, $currency, $limit) // como creamos 2 cuentas usamos una sola función donde se pasa como parámetro el usuario para obtener el id, el tipo de moneda y el límite de transacción
     {
-        $faker = \Faker\Factory::create();
-
-        do { // genera un cbu aleatorio
-            $cbu = $faker->numerify(str_repeat('#', 22)); // genera un cbu aleatorio
-            $cbuUsed = Account::where('cbu', $cbu)->first(); // busca si el cbu generado existe en la base de datos
-        } while ($cbuUsed); // si existe el cbu en la base de datos va a reiniciar el ciclo y crear uno nuevo
-
         $user->save(); // el usuario se crea acá para evitar que se genere un usuario sin cbu si ocurren problemas
 
         $account = new Account();
@@ -66,7 +59,7 @@ class AuthController extends Controller
         $account->transaction_limit = $limit;
         $account->balance = 0;
         $account->user_id = $user->id;
-        $account->cbu = $cbu;
+        $account->cbu = $account->generateCbu();
         $account->save();
     }
 
@@ -77,9 +70,13 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
         if (Auth::attempt($credentials)) {
-            $user = User::find(Auth::user()->id);
-            $token = $user->createToken('token')->accessToken;
-            return response()->created(['token' => $token, 'user' => $user]);
+            $user = User::where('id', Auth::user()->id)->where('deleted', false)->first();
+            if (!$user) {
+                return response()->unprocessableContent([], 'Your user had been deleted');
+            } else {
+                $token = $user->createToken('token')->accessToken;
+                return response()->created(['token' => $token, 'user' => $user]);
+            }
         }
         return response()->unauthorized(['message' => 'Invalid credentials']);
     }

@@ -39,10 +39,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('me', [AuthController::class,'userInfo']);
     });
 
-    Route::middleware('role:ADMIN')->get('users', [UserController::class, 'index']);
+    Route::middleware('role:ADMIN')->group(function () {
+        Route::get('users', [UserController::class, 'index']);
+        Route::get('transactions/{user_id}', [BankMovementsController::class, 'list']);
+    });
 
-    Route::delete('/users/{id}', [UserController::class,'deleteUser']);
+    Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
 
-    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class,'updateTransaction']);
-
+    Route::patch('/transactions/{transaction_id}', [BankMovementsController::class, 'updateTransaction']);
 });

@@ -27,6 +27,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('transactions', [AccountController::class, 'index']);
 
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
+    Route::post('fixed_terms/simulate', [BankMovementsController::class, 'simulate']);
+
     Route::post('accounts', [AccountController::class, 'create']);
     Route::post('/transactions/payment', [BankMovementsController::class, 'payment']);
     Route::post('transactions/send', [BankMovementsController::class, 'send']);

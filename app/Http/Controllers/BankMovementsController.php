@@ -58,18 +58,19 @@ class BankMovementsController extends Controller
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
-  
-    public function updateTransaction(Request $request, $transaction_id) {
 
-        $request -> validate([
+    public function updateTransaction(Request $request, $transaction_id)
+    {
+
+        $request->validate([
             'description' => 'required',
         ]);
-        
+
         $transaction = Transaction::find($transaction_id);
         $transaction->update(['description' => $request->description]);
         $transaction->makeHidden('account');
 
-        return response()->created(['message' => 'Description successfully updated',$transaction]);
+        return response()->created(['message' => 'Description successfully updated', $transaction]);
     }
 
     public function payment(Request $req)
@@ -152,5 +153,43 @@ class BankMovementsController extends Controller
         $incomeTransaction->save();
 
         return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'payment_transaction' => $paymentTransaction, 'to' => $receiver->user, 'income_transaction' => $incomeTransaction], 'Transaction successfully processed');
+    }
+
+    public function simulate(Request $req)
+    {
+        $user = Auth::user(); // busco el usuario autenticado
+
+        $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
+            'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
+            'amount' => "numeric|gte:1000",
+            'duration' => 'numeric|gte:30',
+        ]);
+
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
+
+        $enoughMoney = $account->balance >= $req->amount;
+
+        if (!$enoughMoney) { // devuelvo un código de error 422 con un mensaje indicando que no tiene suficiente dinero para crear el plazo fijo
+            return response()->unprocessableContent([], 'You do not have enough money in your account');
+        }
+
+        $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno
+
+        $fixedTermTotal = $req->amount + ((($req->amount * $fixedTermInterest) / 100) * $req->duration); // sumo el dinero más lo que se tiene que agregar por dia multiplicado a la duración
+
+        $created_at = now(); // la fecha de creación en formato UTC (como se guarda en la base de datos)
+        $closed_at = Carbon::parse($created_at)->addDays(intval($req->duration)); // calculo la fecha de cierre
+        $amount = $req->amount; // el monto que quiere poner en el plazo fijo el usuario
+
+        return response()->created([
+            'message' => 'Fixed term simulation successfully made',
+            'fixed_term' => [
+                'creation_date' => $created_at,
+                'finalization_date' => $closed_at,
+                'amount' => $amount,
+                'total_interest' => $fixedTermTotal - $amount,
+                'total_amount' => $fixedTermTotal,
+            ]
+        ]);
     }
 }

@@ -23,13 +23,13 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
+
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
-            'amount' => "numeric|gte:1000",
+            'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
             'duration' => 'numeric|gte:30',
         ]);
-
-        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
 
         $enoughMoney = $account->balance >= $req->amount;
 
@@ -58,18 +58,19 @@ class BankMovementsController extends Controller
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
-  
-    public function updateTransaction(Request $request, $transaction_id) {
 
-        $request -> validate([
+    public function updateTransaction(Request $request, $transaction_id)
+    {
+
+        $request->validate([
             'description' => 'required',
         ]);
-        
+
         $transaction = Transaction::find($transaction_id);
         $transaction->update(['description' => $request->description]);
         $transaction->makeHidden('account');
 
-        return response()->created(['message' => 'Description successfully updated',$transaction]);
+        return response()->created(['message' => 'Description successfully updated', $transaction]);
     }
 
     public function payment(Request $req)

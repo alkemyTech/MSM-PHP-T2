@@ -58,18 +58,19 @@ class BankMovementsController extends Controller
 
         return response()->created(['message' => 'Fixed term successfully created', 'fixed_term' => $fixedTerm]);
     }
-  
-    public function updateTransaction(Request $request, $transaction_id) {
 
-        $request -> validate([
+    public function updateTransaction(Request $request, $transaction_id)
+    {
+
+        $request->validate([
             'description' => 'required',
         ]);
-        
+
         $transaction = Transaction::find($transaction_id);
         $transaction->update(['description' => $request->description]);
         $transaction->makeHidden('account');
 
-        return response()->created(['message' => 'Description successfully updated',$transaction]);
+        return response()->created(['message' => 'Description successfully updated', $transaction]);
     }
 
     public function payment(Request $req)
@@ -152,5 +153,13 @@ class BankMovementsController extends Controller
         $incomeTransaction->save();
 
         return response()->created(['amount' => $request->amount, 'from' => $sender->user, 'payment_transaction' => $paymentTransaction, 'to' => $receiver->user, 'income_transaction' => $incomeTransaction], 'Transaction successfully processed');
+    }
+
+    public function list($user_id)
+    {
+        $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
+
+        $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->simplePaginate(10);
+        return response()->ok(['transactions' => $transactions]);
     }
 }

@@ -23,13 +23,13 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
+      
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
-            'amount' => "numeric|gte:1000",
+            'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
             'duration' => 'numeric|gte:30',
         ]);
-
-        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
 
         $enoughMoney = $account->balance >= $req->amount;
 
@@ -37,7 +37,7 @@ class BankMovementsController extends Controller
             return response()->unprocessableContent([], 'You do not have enough money in your account');
         }
 
-        $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno
+        $fixedTermInterest = env('FIXED_TERM_INTEREST'); // agarro el interés por día de la variable de entorno
 
         $fixedTermTotal = $req->amount + ((($req->amount * $fixedTermInterest) / 100) * $req->duration); // sumo el dinero más lo que se tiene que agregar por dia multiplicado a la duración
 
@@ -159,13 +159,13 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
+      
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
-            'amount' => "numeric|gte:1000",
+            'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
             'duration' => 'numeric|gte:30',
         ]);
-
-        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
 
         $enoughMoney = $account->balance >= $req->amount;
 
@@ -173,7 +173,7 @@ class BankMovementsController extends Controller
             return response()->unprocessableContent([], 'You do not have enough money in your account');
         }
 
-        $fixedTermInterest = $_ENV['FIXED_TERM_INTEREST']; // agarro el interés por día de la variable de entorno
+        $fixedTermInterest = env('FIXED_TERM_INTEREST'); // agarro el interés por día de la variable de entorno
 
         $fixedTermTotal = $req->amount + ((($req->amount * $fixedTermInterest) / 100) * $req->duration); // sumo el dinero más lo que se tiene que agregar por dia multiplicado a la duración
 

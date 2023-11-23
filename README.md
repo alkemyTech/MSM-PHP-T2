@@ -99,3 +99,26 @@ Esta función espera el parametro "descrption" dentro del cuerpo de la solicitud
 - Por ultimo, en la pestaña 'row', se debe completar un campo llamado 'description', que no puede ser nulo.
 
 > Nota: {transaction_id} debee reemplazarse por el numero id de la transacción que se desea actualizar.
+
+## ¿Cómo actualizar el limite de transacción de una cuenta?
+
+Mediante la funcion "updateAccountLimit" podemos actualizar el limite de transaccion de una cuenta. 
+Esta función espera el parametro "transaction_limit" dentro del cuerpo de la solicitud HTTP. Este parametro, obligatoriamente debe estar completo para procesar la solicitud.
+
+### Validación
+
+- Existencia de la cuenta: Se valida que el 'account_id' se corresponda con una cuenta creada con anterioridad.
+- Propiedad de la cuenta: Se valida que la titularidad de la cuenta, se corresponda con el usuario loggueado que quiere realizar la solicitud de modificiación.
+
+#### Configuración de la solicitud
+
+- Primero, crear una solicitud del tipo 'patch' en Postman
+- Luego, colocar la URL: '/accounts/{account_id}'
+- Por ultimo, en la pestaña 'row', se debe completar un campo llamado 'account_id', que no puede ser nulo.
+
+> Nota: {account_id} debee reemplazarse por el numero id de la cuenta que se desea actualizar.
+
+## ¿Como obtiene el usuario su información?
+
+Para que el usuario pueda visualizar su informacion, en primer lugar debe estar loggueado.
+Luego, mediante un metodo Get con la URL '/auth/me', la funcion userInfo devolverá la información de usuario.

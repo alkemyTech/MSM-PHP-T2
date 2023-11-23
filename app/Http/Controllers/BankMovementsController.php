@@ -192,4 +192,12 @@ class BankMovementsController extends Controller
             ]
         ]);
     }
+    
+    public function list($user_id)
+    {
+        $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
+
+        $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->simplePaginate(10);
+        return response()->ok(['transactions' => $transactions]);
+    }
 }

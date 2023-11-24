@@ -18,6 +18,19 @@ class AccountController extends Controller
         return response()->ok(['transactions' => $transactions]);
     }
 
+    public function list($id)
+    {
+        $userId = Auth::user()->id;
+        $transaction = Transaction::find($id);
+        $account = Account::where('user_id', $userId)->where('id', $transaction->account_id)->where('deleted', false)->first();
+
+        if (!$account) {
+            return response()->unprocessableContent([], 'Invalid transaction id');
+        }
+
+        return response()->ok(['transaction' => $transaction]);
+    }
+
     public function create(Request $request)
     {
         $user = Auth::user();
@@ -36,9 +49,10 @@ class AccountController extends Controller
         return response()->created(['account' => $account], 'Account successfully created');
     }
 
-    public function updateAccountLimit(Request $request, $account_id) {
+    public function updateAccountLimit(Request $request, $account_id)
+    {
 
-        $request -> validate([
+        $request->validate([
             'transaction_limit' => 'required',
         ]);
 
@@ -49,14 +63,13 @@ class AccountController extends Controller
 
         $authUser_id = (Auth::user())->id;
         $owner_user_id = $account_id->user->id;
-        
+
         if ($authUser_id != $owner_user_id) {
             return response()->forbidden(['message' => "The Account doesn't belong to you"]);
         } else {
             $account_id->update(['transaction_limit' => $request->transaction_limit]);
             $account_id->makeHidden('user');
-            return response()->ok(['message' => 'Transaction Limit successfully updated',$account_id]);
+            return response()->ok(['message' => 'Transaction Limit successfully updated', $account_id]);
         }
     }
 }
-

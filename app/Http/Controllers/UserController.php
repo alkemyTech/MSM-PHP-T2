@@ -9,9 +9,16 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $req)
     {
-        return response()->ok(['users' => User::where('deleted', false)->get()]);
+        $users = User::where('deleted', false);
+        // Si envia un numero de pagina se devuelve paginado, sino se devuelve todo
+        if(isset($req->page)){
+            $users = $users->simplePaginate(10);
+        } else {
+            $users = $users->get();
+        }
+        return response()->ok(['users' => $users]);
     }
 
     public function deleteUser(Request $req, $id) {
@@ -34,12 +41,5 @@ class UserController extends Controller
             } else {
                 return response()->forbidden(['message' => 'No tienes permisos para realizar esta acción']);
             }
-    }
-
-    public function paginate(Request $req)
-    {
-        // Devuelve los usuarios paginados de a 10
-        $users = User::where('deleted', false)->simplePaginate(10);
-        return response()->ok(['users' => $users]);
     }
 }

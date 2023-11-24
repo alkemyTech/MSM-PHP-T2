@@ -44,7 +44,6 @@ Route::middleware('auth:api')->group(function () {
 
     Route::middleware('role:ADMIN')->group(function () {
         Route::get('users', [UserController::class, 'index']);
-        Route::get('users/paginate', [UserController::class, 'paginate']);
         Route::get('transactions/{user_id}', [BankMovementsController::class, 'list']);
     });
 

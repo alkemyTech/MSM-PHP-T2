@@ -38,6 +38,7 @@ class UserController extends Controller
 
     public function paginate(Request $req)
     {
+        // Devuelve los usuarios paginados de a 10
         $users = User::where('deleted', false)->simplePaginate(10);
         return response()->ok(['users' => $users]);
     }

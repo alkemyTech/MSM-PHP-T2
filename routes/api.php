@@ -22,11 +22,12 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->group(function () {
 
     Route::prefix('accounts')->group(function () {
-        Route::get('balance', [BankMovementsController::class, 'index']); 
-        Route::patch('{account_id}', [AccountController::class,'updateAccountLimit']);
+        Route::get('balance', [BankMovementsController::class, 'index']);
+        Route::patch('{account_id}', [AccountController::class, 'updateAccountLimit']);
     });
 
     Route::get('transactions', [AccountController::class, 'index']);
+    Route::get('transactions/{id}', [AccountController::class, 'list']);
 
     Route::post('fixed_terms', [BankMovementsController::class, 'create']);
     Route::post('fixed_terms/simulate', [BankMovementsController::class, 'simulate']);

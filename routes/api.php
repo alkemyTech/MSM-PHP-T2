@@ -39,6 +39,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->withoutMiddleware('auth:api');
         Route::post('login', [AuthController::class, 'login'])->withoutMiddleware('auth:api');
         Route::get('me', [AuthController::class,'userInfo']);
+        Route::put('me', [AuthController::class,'update']);
     });
 
     Route::middleware('role:ADMIN')->group(function () {

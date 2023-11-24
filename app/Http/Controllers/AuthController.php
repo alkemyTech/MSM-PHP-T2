@@ -89,22 +89,17 @@ class AuthController extends Controller
     }
 
     public function update(Request $request){
-        $validated = $request->validate([
+        // validar los datos que se quieren actualizar
+        $credentials = $request->validate([
             'name' => 'string|min:3|max:255',
             'last_name' => 'string|min:3|max:255',
             'password' => 'string|min:6|max:255',
         ]);
-        $user = Auth::user();
-        if($validated['name']){
-            $user->name = $validated['name'];
-        }
-        if($validated['last_name']){
-            $user->last_name = $validated['last_name'];
-        }
-        if($validated['password']){
-            $user->password = Hash::make($validated['password']);
-        }
+        // buscar usuario y actualizar los datos solicitados
+        $user = User::find(Auth::user()->id);
+        $user->update($credentials);
         $user->save();
-        return response()->ok();
+        return response()->ok(['user' => $user]);
     }
+
 }

@@ -35,4 +35,10 @@ class UserController extends Controller
                 return response()->forbidden(['message' => 'No tienes permisos para realizar esta acción']);
             }
     }
+
+    public function paginate(Request $req)
+    {
+        $users = User::where('deleted', false)->simplePaginate(10);
+        return response()->ok(['users' => $users]);
+    }
 }

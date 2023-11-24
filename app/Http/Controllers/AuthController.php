@@ -94,6 +94,9 @@ class AuthController extends Controller
             'name' => 'string|min:3|max:255',
             'last_name' => 'string|min:3|max:255',
             'password' => 'string|min:6|max:255',
+            'email' => 'prohibited',
+            'role_id' => 'prohibited',
+            'deleted' => 'prohibited'
         ]);
         // buscar usuario y actualizar los datos solicitados
         $user = User::find(Auth::user()->id);

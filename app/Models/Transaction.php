@@ -11,7 +11,6 @@ class Transaction extends Model
 
     public $timestamps = false;
     protected $fillable = ['id', 'amount', 'description', 'type', 'account_id'];
-    protected $hidden = ['account_id'];
     protected $guarded = ['transaction_date'];
     protected $with = ['account'];
 

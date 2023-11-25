@@ -50,7 +50,26 @@ class UpdateAccountTest extends TestCase
         $this->assertEquals($account->cbu, $response['data']['0']['cbu']);
     }
 
-    public function test_account_does_not_exist_endpoint(): void
+    public function test_transaction_field_not_sent(): void
+    {
+        $data = [
+            'email' => 'updateaccount@gmail.com',
+            'password' => 'passwordtest'
+        ];
+
+        $registerResponse = $this->postJson('/api/auth/login', $data);
+
+        $jsonResponse = $registerResponse->json();
+        $token = $jsonResponse['data']['token'];
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->patchJson("/api/accounts/1000");
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrorFor('transaction_limit');
+    }
+
+    public function test_account_does_not_exist(): void
     {
         $data = [
             'email' => 'updateaccount@gmail.com',
@@ -66,10 +85,15 @@ class UpdateAccountTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->patchJson("/api/accounts/1000", $updatedData);
 
-        $response->assertNotFound();
+        $response->assertNotFound()
+            ->assertJsonStructure([
+                "errors" => [
+                    "message"
+                ]
+            ]);
     }
 
-    public function test_account_is_not_yours_endpoint(): void
+    public function test_account_is_not_yours(): void
     {
         $data = [
             'email' => 'updateaccount@gmail.com',
@@ -87,6 +111,11 @@ class UpdateAccountTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->patchJson("/api/accounts/$account_id", $updatedData);
 
-        $response->assertForbidden();
+        $response->assertForbidden()
+            ->assertJsonStructure([
+                "errors" => [
+                    "message"
+                ]
+            ]);
     }
 }

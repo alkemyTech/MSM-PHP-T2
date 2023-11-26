@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Models\Role;
+use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class AccountController extends Controller
 {
@@ -71,5 +76,33 @@ class AccountController extends Controller
             $account_id->makeHidden('user');
             return response()->ok(['message' => 'Transaction Limit successfully updated', $account_id]);
         }
+    }
+
+    public function listAllAccount() {
+        $authUser = Auth::user();
+        $role_id_admin = Role::where('name', 'ADMIN')->value('id');
+        
+        if ($authUser->role_id == $role_id_admin) {
+            $allAccounts = DB::table('accounts')->simplePaginate(10);;
+            return response()->ok(['All Accounts: '=> $allAccounts]);
+        } else {
+            return response()->forbidden(['message' => 'You do not have permissions to perform this action']);
+        }
+    }
+
+    public function listUserAccounts($user_id) {
+        $authUser = Auth::user();
+        $role_id_admin = Role::where('name', 'ADMIN')->value('id');
+        $user = User::where('id', $user_id)->first();
+        
+        if ($authUser->role_id == $role_id_admin) {
+            $user_id_accounts = DB::table('accounts')->where('user_id', $user_id)->simplePaginate(10);
+
+            return response()->ok(["User '$user->id - $user->name, $user->last_name' Accounts: " => $user_id_accounts]);
+
+        } else {
+            return response()->forbidden(['message' => 'You do not have permissions to perform this action']);
+        }
+
     }
 }

@@ -31,6 +31,12 @@ class AccountController extends Controller
         return response()->ok(['transaction' => $transaction]);
     }
 
+    public function obtain($user_id)
+    {
+        $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
+        return response()->ok(['accounts' => $accounts]);
+    }
+
     public function create(Request $request)
     {
         $user = Auth::user();

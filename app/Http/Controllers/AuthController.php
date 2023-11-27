@@ -87,4 +87,22 @@ class AuthController extends Controller
         $userInfo->makeHidden('role_id','remember_token');
         return response()->json([$userInfo]);
     }
+
+    public function update(Request $request){
+        // validar los datos que se quieren actualizar
+        $credentials = $request->validate([
+            'name' => 'string|min:3|max:255',
+            'last_name' => 'string|min:3|max:255',
+            'password' => 'string|min:6|max:255',
+            'email' => 'prohibited',
+            'role_id' => 'prohibited',
+            'deleted' => 'prohibited'
+        ]);
+        // buscar usuario y actualizar los datos solicitados
+        $user = User::find(Auth::user()->id);
+        $user->update($credentials);
+        $user->save();
+        return response()->ok(['user' => $user]);
+    }
+
 }

@@ -24,7 +24,7 @@ class BankMovementsController extends Controller
         $user = Auth::user(); // busco el usuario autenticado
 
         $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
-      
+
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
             'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
@@ -160,7 +160,7 @@ class BankMovementsController extends Controller
         $user = Auth::user(); // busco el usuario autenticado
 
         $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
-      
+
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
             'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
@@ -192,12 +192,38 @@ class BankMovementsController extends Controller
             ]
         ]);
     }
-    
+
     public function list($user_id)
     {
         $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
 
         $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->simplePaginate(10);
         return response()->ok(['transactions' => $transactions]);
+    }
+
+    public function deposit(Request $req)
+    {
+        $user_id = Auth::user()->id;
+
+        $req->validate([
+            'account_id' => ['required', 'numeric', Rule::exists('accounts', 'id')->where('user_id', $user_id)->where('deleted', false)],
+            'amount' => "required|numeric|gte:1",
+            'description' => 'string|max:255'
+        ]);
+
+        $account = Account::where('id', $req->account_id)->first();
+
+        $transaction = new Transaction();
+        $transaction->amount = $req->amount;
+        $transaction->type = 'DEPOSIT';
+        $transaction->description = $req->description;
+        $transaction->account_id = $req->account_id;
+
+        $account->balance += $req->amount;
+
+        $account->save();
+        $transaction->save();
+
+        return response()->created(['transaction' => $transaction, 'account' => $account]);
     }
 }

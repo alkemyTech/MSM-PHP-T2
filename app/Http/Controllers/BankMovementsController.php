@@ -23,13 +23,14 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
-      
+
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
-            'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
+            'amount' => "numeric|gte:1000",
             'duration' => 'numeric|gte:30',
         ]);
+
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
 
         $enoughMoney = $account->balance >= $req->amount;
 
@@ -159,13 +160,14 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
-      
+
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
-            'amount' => "numeric|gte:1000|lte:{$account->transaction_limit}",
+            'amount' => "numeric|gte:1000",
             'duration' => 'numeric|gte:30',
         ]);
+
+        $account = Account::where('id', $req->account_id)->first(); // busco la cuenta en pesos que pertenece al usuario
 
         $enoughMoney = $account->balance >= $req->amount;
 
@@ -192,7 +194,7 @@ class BankMovementsController extends Controller
             ]
         ]);
     }
-    
+
     public function list($user_id)
     {
         $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();

@@ -37,8 +37,8 @@ class FixedTermTest extends TestCase
         $fixedTerm = new FixedTerm();
         $fixedTerm->amount = $fixedTermData['amount'];
         $fixedTerm->account_id = $account->id;
-        $fixedTerm->interest = $_ENV['FIXED_TERM_INTEREST'];
-        $fixedTerm->total = $fixedTermData['amount'] + ((($fixedTermData['amount'] * $_ENV['FIXED_TERM_INTEREST']) / 100) * $fixedTermData['duration']);
+        $fixedTerm->interest = env('FIXED_TERM_INTEREST');
+        $fixedTerm->total = $fixedTermData['amount'] + ((($fixedTermData['amount'] * $fixedTerm->interest) / 100) * $fixedTermData['duration']);
         $fixedTerm->duration = $fixedTermData['duration'];
         $fixedTerm->closed_at = Carbon::parse($fixedTerm->created_at)->addDays(intval($fixedTermData['duration']));
         $fixedTerm->save();
@@ -69,7 +69,7 @@ class FixedTermTest extends TestCase
         $this->assertEquals($fixedTerm->total,  $response['data']['fixed_term']['total']);
         $this->assertEquals($account->balance,  $response['data']['fixed_term']['account']['balance']);
         $this->assertEquals($fixedTerm->closed_at,  Carbon::parse($response['data']['fixed_term']['closed_at'])->toDateTimeString());
-        $this->assertEquals($_ENV['FIXED_TERM_INTEREST'],  $response['data']['fixed_term']['interest']);
+        $this->assertEquals($fixedTerm->interest,  $response['data']['fixed_term']['interest']);
     }
 
     public function test_not_enough_money_fixed_term_endpoint(): void

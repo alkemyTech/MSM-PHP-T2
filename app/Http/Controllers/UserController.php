@@ -32,11 +32,11 @@ class UserController extends Controller
 
             } elseif ($authUser->role_id == $role_id_admin) {
                 $userToDelete->update(['deleted' => 1]);
-                return response()->ok(['message' => "Usuario '$userToDelete->name''$userToDelete->last_name' eliminado correctamente", 200]);
+                return response()->ok(['message' => "Usuario '$userToDelete->name''$userToDelete->last_name' eliminado correctamente"]);
 
             } elseif ($authUser->role_id == $role_id_user && $authUser->id === $userToDelete->id) {
                 $userToDelete->update(['deleted' => 1]);
-                return response()->ok(['message' => 'Ud. ha sido eliminado correctamente', 200]);
+                return response()->ok(['message' => 'Ud. ha sido eliminado correctamente']);
 
             } else {
                 return response()->forbidden(['message' => 'No tienes permisos para realizar esta acción']);

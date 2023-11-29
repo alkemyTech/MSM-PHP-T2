@@ -65,12 +65,18 @@ class BankMovementsController extends Controller
         $request->validate([
             'description' => 'required',
         ]);
-
+        
+        $userId = Auth::user()->id;
         $transaction = Transaction::find($transaction_id);
-        $transaction->update(['description' => $request->description]);
-        $transaction->makeHidden('account');
+        $account = Account::where('user_id', $userId)->where('id', $transaction->account_id)->where('deleted', false)->first();
 
-        return response()->created(['message' => 'Description successfully updated', $transaction]);
+        if ($account) {
+            $transaction->update(['description' => $request->description]);
+            $transaction->makeHidden('account');
+            return response()->created(['message' => 'Description successfully updated', $transaction]);
+        } else {
+            return response()->notFound([], 'Account not found');
+        }
     }
 
     public function payment(Request $req)

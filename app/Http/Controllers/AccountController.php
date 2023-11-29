@@ -57,7 +57,6 @@ class AccountController extends Controller
 
     public function updateAccountLimit(Request $request, $account_id)
     {
-
         $request->validate([
             'transaction_limit' => 'required',
         ]);

@@ -35,6 +35,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('accounts', [AccountController::class, 'create']);
     Route::post('/transactions/payment', [BankMovementsController::class, 'payment']);
     Route::post('transactions/send', [BankMovementsController::class, 'send']);
+    Route::post('transactions/deposit', [BankMovementsController::class, 'deposit']);
 
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register'])->withoutMiddleware('auth:api');
@@ -42,10 +43,10 @@ Route::middleware('auth:api')->group(function () {
         Route::get('me', [AuthController::class, 'userInfo']);
         Route::patch('me', [AuthController::class, 'update']);
     });
-
     Route::middleware('role:ADMIN')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('accounts/{user_id}', [AccountController::class, 'obtain']);
+        Route::get('accounts/all', [AccountController::class, 'listAllAccounts']);
         Route::get('transactions/{user_id}', [BankMovementsController::class, 'list']);
     });
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,6 +36,16 @@ class AccountController extends Controller
     public function obtain($user_id)
     {
         $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
+        $accounts = DB::table('accounts')->simplePaginate(10);
+
+        return response()->ok(['accounts' => $accounts]);
+    }
+
+    public function listAllAccounts() {
+
+        $accounts = Account::where('deleted', false)->get();
+        $accounts = DB::table('accounts')->simplePaginate(10);
+
         return response()->ok(['accounts' => $accounts]);
     }
 
@@ -57,7 +69,6 @@ class AccountController extends Controller
 
     public function updateAccountLimit(Request $request, $account_id)
     {
-
         $request->validate([
             'transaction_limit' => 'required',
         ]);

@@ -23,7 +23,6 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
             'amount' => "numeric|gte:1000",
@@ -66,12 +65,18 @@ class BankMovementsController extends Controller
         $request->validate([
             'description' => 'required',
         ]);
-
+        
+        $userId = Auth::user()->id;
         $transaction = Transaction::find($transaction_id);
-        $transaction->update(['description' => $request->description]);
-        $transaction->makeHidden('account');
+        $account = Account::where('user_id', $userId)->where('id', $transaction->account_id)->where('deleted', false)->first();
 
-        return response()->created(['message' => 'Description successfully updated', $transaction]);
+        if ($account) {
+            $transaction->update(['description' => $request->description]);
+            $transaction->makeHidden('account');
+            return response()->created(['message' => 'Description successfully updated', $transaction]);
+        } else {
+            return response()->notFound([], 'Account not found');
+        }
     }
 
     public function payment(Request $req)
@@ -160,7 +165,6 @@ class BankMovementsController extends Controller
     {
         $user = Auth::user(); // busco el usuario autenticado
 
-
         $req->validate([ // valido que el dinero a meter en el plazo fijo sea mayor o igual a 1000, que la duración de este sea mayor o igual a 30 dias y que el id de la cuenta pertenezca al usuario        
             'account_id' => Rule::exists('accounts', 'id')->where('user_id', $user->id)->where('currency', 'ARS')->where('deleted', false),
             'amount' => "numeric|gte:1000",
@@ -201,5 +205,31 @@ class BankMovementsController extends Controller
 
         $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->simplePaginate(10);
         return response()->ok(['transactions' => $transactions]);
+    }
+
+    public function deposit(Request $req)
+    {
+        $user_id = Auth::user()->id;
+
+        $req->validate([
+            'account_id' => ['required', 'numeric', Rule::exists('accounts', 'id')->where('user_id', $user_id)->where('deleted', false)],
+            'amount' => "required|numeric|gte:1",
+            'description' => 'string|max:255'
+        ]);
+
+        $account = Account::where('id', $req->account_id)->first();
+
+        $transaction = new Transaction();
+        $transaction->amount = $req->amount;
+        $transaction->type = 'DEPOSIT';
+        $transaction->description = $req->description;
+        $transaction->account_id = $req->account_id;
+
+        $account->balance += $req->amount;
+
+        $account->save();
+        $transaction->save();
+
+        return response()->created(['transaction' => $transaction, 'account' => $account]);
     }
 }

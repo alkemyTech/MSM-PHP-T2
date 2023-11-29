@@ -41,7 +41,8 @@ class AccountController extends Controller
         return response()->ok(['accounts' => $accounts]);
     }
 
-    public function listAllAccounts() {
+    public function listAllAccounts()
+    {
 
         $accounts = Account::where('deleted', false)->get();
         $accounts = DB::table('accounts')->simplePaginate(10);
@@ -86,7 +87,7 @@ class AccountController extends Controller
         } else {
             $account_id->update(['transaction_limit' => $request->transaction_limit]);
             $account_id->makeHidden('user');
-            return response()->ok(['message' => 'Transaction Limit successfully updated', $account_id]);
+            return response()->ok(['message' => 'Transaction Limit successfully updated', 'account' => $account_id]);
         }
     }
 }

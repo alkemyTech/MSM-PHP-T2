@@ -65,7 +65,7 @@ class BankMovementsController extends Controller
         $request->validate([
             'description' => 'required',
         ]);
-        
+
         $userId = Auth::user()->id;
         $transaction = Transaction::find($transaction_id);
         $account = Account::where('user_id', $userId)->where('id', $transaction->account_id)->where('deleted', false)->first();
@@ -199,9 +199,9 @@ class BankMovementsController extends Controller
         ]);
     }
 
-    public function list($user_id)
+    public function list(Request $req)
     {
-        $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
+        $accounts = Account::where('user_id', $req->id)->where('deleted', false)->get();
 
         $transactions = Transaction::whereIn('account_id', $accounts->pluck('id'))->simplePaginate(10);
         return response()->ok(['transactions' => $transactions]);

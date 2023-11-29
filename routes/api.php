@@ -47,7 +47,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('users', [UserController::class, 'index']);
         Route::get('accounts/{user_id}', [AccountController::class, 'obtain']);
         Route::get('accounts/all', [AccountController::class, 'listAllAccounts']);
-        Route::get('transactions/{user_id}', [BankMovementsController::class, 'list']);
+        Route::get('transactions/{id}', [BankMovementsController::class, 'list']);
     });
 
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);

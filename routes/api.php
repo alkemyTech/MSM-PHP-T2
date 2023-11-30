@@ -45,7 +45,7 @@ Route::middleware('auth:api')->group(function () {
     });
     Route::middleware('role:ADMIN')->group(function () {
         Route::get('users', [UserController::class, 'index']);
-        Route::get('accounts/{user_id}', [AccountController::class, 'obtain']);
+        Route::get('accounts/{id}', [AccountController::class, 'obtain']);
         Route::get('accounts/all', [AccountController::class, 'listAllAccounts']);
         Route::get('transactions/{id}', [BankMovementsController::class, 'list']);
     });

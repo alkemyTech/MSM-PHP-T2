@@ -33,10 +33,9 @@ class AccountController extends Controller
         return response()->ok(['transaction' => $transaction]);
     }
 
-    public function obtain($user_id)
+    public function obtain(Request $req)
     {
-        $accounts = Account::where('user_id', $user_id)->where('deleted', false)->get();
-        $accounts = DB::table('accounts')->simplePaginate(10);
+        $accounts = DB::table('accounts')->where('user_id', $req->id)->where('deleted', false)->simplePaginate(10);
 
         return response()->ok(['accounts' => $accounts]);
     }

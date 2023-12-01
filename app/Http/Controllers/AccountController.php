@@ -35,7 +35,7 @@ class AccountController extends Controller
 
     public function obtain(Request $req)
     {
-        $accounts = DB::table('accounts')->where('user_id', $req->id)->where('deleted', false)->simplePaginate(10);
+        $accounts = Account::where('user_id', $req->id)->where('deleted', false)->simplePaginate(10);
 
         return response()->ok(['accounts' => $accounts]);
     }
@@ -43,8 +43,7 @@ class AccountController extends Controller
     public function listAllAccounts()
     {
 
-        $accounts = Account::where('deleted', false)->get();
-        $accounts = DB::table('accounts')->simplePaginate(10);
+        $accounts = Account::where('deleted', false)->simplePaginate(10);
 
         return response()->ok(['accounts' => $accounts]);
     }

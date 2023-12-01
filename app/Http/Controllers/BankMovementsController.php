@@ -190,8 +190,8 @@ class BankMovementsController extends Controller
         return response()->created([
             'message' => 'Fixed term simulation successfully made',
             'fixed_term' => [
-                'creation_date' => $created_at,
-                'finalization_date' => $closed_at,
+                'creation_date' => $created_at->format('Y-m-d H:i:s'),
+                'finalization_date' => $closed_at->format('Y-m-d H:i:s'),
                 'amount' => $amount,
                 'total_interest' => $fixedTermTotal - $amount,
                 'total_amount' => $fixedTermTotal,
